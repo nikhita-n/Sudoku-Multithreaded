@@ -19,26 +19,40 @@ int column[9]={0};
 int grid_33[9]={0};
 int in_range[9]={0};
 int result=0;
+//User defined function to handle input and output of the Sudoku Puzzle
+void input();
+void output();
 //threads call these functions
 void *row_check_runner(void *param); 
 void *col_check_runner(void *param);
 void *grid_check_runner(void *param);
 void *check_if_in_range_runner(void *param);
-//We call these functions
+//User defined functions to handle thread related operations
 void create_threads(pthread_t *,pthread_attr_t,void *param);
 void all_check(pthread_t *,pthread_attr_t);
 int check_thread_return(int *);
 
 int main()
 {
+    int c;
+    printf("\nSudoku Validity checking program using multiple threads.\n\n\nChoose\n1.Input a puzzle\n2.Default Puzzle\n");
+    scanf("%d",&c);
+    switch(c){
+        case 1:input();
+               break;
+        case 2:
+        default:break;
+    }
+    output();
     pthread_t workers[NUM_THREADS]; //thread identifier
     pthread_attr_t attr; //set of thread attributes
     pthread_attr_init(&attr);//setting default attributes of the thread
+    printf("\n\nResults\n");
     all_check(workers,attr);
     if(result)
-        printf("\nYes, the given puzzle is a sudoko puzzle");
+        printf("\n\nYes, the given puzzle is a sudoku puzzle\n");
     else
-        printf("\nNo, the given puzzle is not a sudoko puzzle");
+        printf("\n\nNo, the given puzzle is not a sudoku puzzle\n");
     return 0;
 }
 
@@ -47,7 +61,7 @@ void all_check(pthread_t *workers,pthread_attr_t attr){
     create_threads(workers,attr,check_if_in_range_runner);
     if(check_thread_return(in_range))
     {
-    printf("\nIn Range -CHECK");
+    printf("\nIn Range [1-9] -CHECK");
     //ROW_CHECK
     create_threads(workers,attr,row_check_runner);
     if(check_thread_return(rows))
@@ -57,25 +71,31 @@ void all_check(pthread_t *workers,pthread_attr_t attr){
             create_threads(workers,attr,col_check_runner);
             if(check_thread_return(column))
                 {
-                    printf("\nCol -CHECK");
+                    printf("\nColumns -CHECK");
                     //GRID CHECK
                     create_threads(workers,attr,grid_check_runner);
                     if(check_thread_return(grid_33))
                         {
-                            printf("\ngrid -CHECK");
+                            printf("\n3x3 Grids -CHECK");
                             result=1;
                         }
                     else
-                        result=0;
+                        {result=0;
+                        printf("\nDuplicate entries found in 3x3 grids");
+                        }
                 }
             else 
-                result=0;
+                {result=0;
+                 printf("\nDuplicate entries found in columns");
+                }
         }
-    else 
+    else {
         result=0;
+        printf("\nDuplicate entries found in rows");}
     }
-    else
-        result=0;
+    else{
+        printf("\nOut of range[1-9] entries found");
+        result=0;}
 }
 void create_threads(pthread_t *workers,pthread_attr_t attr,void *param){
      //creating threads
@@ -163,4 +183,22 @@ int check_thread_return(int *array){
             return 0;
     }
     return 1;
+}
+void input(){
+    for(int i=0;i<9;i++){
+        for(int j=0;j<9;j++)
+            scanf("%d",&puzzle[i][j]);
+    }
+}
+void output(){
+    printf("\n\nThe chosen Sudoku Puzzle is:\n\n");
+     for(int i=0;i<9;i++){
+        for(int j=0;j<9;j++){
+            printf("%d ",puzzle[i][j]);
+            if(j%3==2)
+            printf("|");
+    }
+    if(i%3==2) printf("\n---------------------");
+    printf("\n");
+     }
 }
