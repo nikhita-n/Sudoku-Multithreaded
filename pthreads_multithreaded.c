@@ -127,15 +127,16 @@ void *grid_check_runner(void *param){
     //checking duplicate entries
     for(int i=0;i<9;i++){
     for(int j=i+1;j<9;j++){
-        if(puzzle[k][l]==puzzle[m][n]);
+        if(puzzle[k][l]==puzzle[m][n])
             { flag=1; break;}
-        m+=(n+1)/3;
-        n=(n+1)%3;
+        m+=((n+1)-(grid%3)*3)/3;
+        n=(n+1)%3+(grid%3)*3;
     }
-    k+=(l+1)/3;
-    l=(l+1)%3;
-    m=k+(l+1)/3;
-    n=(l+1)%3;
+    k+=((l+1)-(grid%3)*3)/3;
+    l=(l+1)%3+(grid%3)*3;
+    m=k+((l+1)-(grid%3)*3)/3;
+    n=(l+1)%3+(grid%3)*3;
+    
     }
     if(flag==0) grid_33[grid]=1;
     else grid_33[grid]=0;
