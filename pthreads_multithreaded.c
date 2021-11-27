@@ -14,19 +14,23 @@ int puzzle[9][9] = {{1,2,3,6,7,8,9,4,5},
                     {8,3,6,9,2,4,1,5,7},
                     {2,1,9,8,5,7,4,3,6},
                     {7,4,5,3,1,6,8,9,2}};
-int var[9] = {0,1,2,3,4,5,6,7,8}; //this is the row/column/grid identifier we pass to the threads
+//Row/column/grid identifier passed to the worker threads 
+int var[9] = {0,1,2,3,4,5,6,7,8}; 
+/*result array, which worker threads update 
+  1 if successful; 
+  0 if unsuccessful */
 int rows[9] = {0};
 int column[9] = {0};
-int grid_33[9] = {0};
+int subgrid[9] = {0};
 int in_range[9] = {0};
 int result = 0;
-//User defined function to handle input and output of the Sudoku Puzzle
+//User defined function to handle the input and output operations of the Sudoku Puzzle
 void input ();
 void output ();
 //threads call these functions
-void * row_check_runner (void *param);
-void * col_check_runner (void *param);
-void * grid_check_runner (void *param);
+void * row_check_runner (void *param); 
+void * col_check_runner (void *param); 
+void * subgrid_check_runner (void *param);
 void * check_if_in_range_runner (void *param);
 //User defined functions to handle thread related operations
 void create_threads (pthread_t *,pthread_attr_t,void *param);
@@ -69,6 +73,9 @@ int main ()
   return 0;
 }
 
+/*Creates threads which check duplicacy in rows, columns, subgrids 
+  and also checks 
+  whether the puzzle contains entries from 1-9 only*/
 void all_check (pthread_t *workers,pthread_attr_t attr)
 {
   //CHECKING IF THE PUZZLE HAS ENTRIES IN THE RANGE, 1 to 9
@@ -87,8 +94,8 @@ void all_check (pthread_t *workers,pthread_attr_t attr)
             {
               printf ("\nColumns -CHECK");
               //GRID CHECK
-              create_threads (workers,attr,grid_check_runner);
-              if (check_thread_return (grid_33))
+              create_threads (workers,attr,subgrid_check_runner);
+              if (check_thread_return (subgrid))
                 {
                   printf ("\n3x3 Grids -CHECK");
                   result = 1;
@@ -117,12 +124,15 @@ void all_check (pthread_t *workers,pthread_attr_t attr)
       result = 0;
     }
 }
+/*creates threads, summons the corresponding 
+runner function - param parameter points to which function to run*/
 void create_threads (pthread_t *workers,pthread_attr_t attr,void *param)
 {
   //creating threads
   for (int i = 0; i < NUM_THREADS; i++)
     {
-      pthread_create (&workers[i],&attr,param,&var[i]);
+      if(pthread_create (&workers[i],&attr,param,&var[i]))
+        printf("\nThread Creation Failed");
     }
 
   //waiting for threads to exit
@@ -131,6 +141,9 @@ void create_threads (pthread_t *workers,pthread_attr_t attr,void *param)
       pthread_join (workers[i],NULL);
     }
 }
+/*Function pertaining to row operations 
+- checking duplicacy of entries in a particular 
+  row as pointed to by param*/
 void * row_check_runner (void *param)
 {
   int *temp = (int*)param;
@@ -156,10 +169,11 @@ void * row_check_runner (void *param)
     {
       rows[row] = 0;
     }
-  //printf(" rows array %d ",rows[row]);
   pthread_exit (0);
 }
-
+/*Function pertaining to column operations 
+- checking duplicacy of entries in a 
+  particular column as pointed to by param*/
 void * col_check_runner (void *param)
 {
   int col = *((int*)param);
@@ -186,8 +200,12 @@ void * col_check_runner (void *param)
     }
   pthread_exit (0);
 }
-
-void * grid_check_runner (void *param)
+/*Function pertaining to subgrid operations 
+-checking duplicacy of entries in a particular 
+ subgrid as pointed to by param, 
+ the numbering of the grids is done from left 
+ to right and then down*/
+void * subgrid_check_runner (void *param)
 {
   int grid = *((int*)param);
   int flag = 0;
@@ -198,6 +216,7 @@ void * grid_check_runner (void *param)
   n = l + 1;
   //checking duplicate entries
   for (int i = 0; i < 9; i++)
+  
     {
       for (int j = i + 1; j < 9; j++)
         {
@@ -217,15 +236,16 @@ void * grid_check_runner (void *param)
     }
   if (flag == 0)
     {
-      grid_33[grid] = 1;
+      subgrid[grid] = 1;
     }
   else
     {
-      grid_33[grid] = 0;
+      subgrid[grid] = 0;
     }
   pthread_exit (0);
 }
-
+/*Function checking if the entries in the puzzle are in the range [0-9]
+  Note: Checking happens row-wise*/ 
 void * check_if_in_range_runner (void *param)
 {
   int *temp = ((int*)param);
