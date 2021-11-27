@@ -28,9 +28,13 @@ After cloning the repository, go into the local directory and enter the followin
 ```
 gcc pthreads_multithreaded.c -o sudoku.out -lpthread
 ```
+```
+./sudoku.out
+```
 ### References
 - https://man7.org/linux/man-pages/man3/pthread_create.3.html
 - https://man7.org/linux/man-pages/man3/pthread_join.3.html
+- [Silberschatz] Operating System Concepts, 10th edition by Avi Silberschatz, Peter Baer Galvin and Greg Gagne (https://codex.cs.yale.edu/avi/os-book/OS10/slide-dir/index.html)
 
 ### Future Work
 
