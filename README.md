@@ -1,5 +1,5 @@
 # Sudoku-Multithreaded Program
-Assignment submission for CS252(Minor Course) 
+Assignment submission for CS252(Minor Course) - Project 1 CHAPTER 4 - Operating System Concepts, 10th edition by Avi Silberschatz, Peter Baer Galvin and Greg Gagne
 
 Submitted by 
 
